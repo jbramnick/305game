@@ -2,3 +2,8 @@
 "goodbye"
 "hello"
 "goodbye"
+alias add='git add *.c ; git add *.txt ; git add *.java ; git add *.h ;
+	   git add *.py'
+alias push='add ; git commit -a ; git push'
+alias pull='add ; git commit -a ; git pull'
+
