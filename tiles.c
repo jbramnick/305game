@@ -6,8 +6,8 @@
 #include "background.h"
 
 /* include the tile map we are using */
-#include "map.h"
-#include "map2.h"
+#include "testmap.h"
+#include "testplayer.h"
 
 /* the width and height of the screen */
 #define WIDTH 240
@@ -139,12 +139,12 @@ void setup_background() {
 	    (0 << 14);        /* bg size, 0 is 256x256 */
 /* load the tile data into screen block 16 */
     dest = screen_block(16);
-    for (int i = 0; i < (map_width * map_height); i++) {
-	    dest[i] = map[i];
+    for (int i = 0; i < (testmap_width * testmap_height); i++) {
+	    dest[i] = testmap[i];
     }
     dest=screen_block(17);
-    for (int i = 0; i < (map2_width * map2_height); i++) {
-	    dest[i] = map2[i];
+    for (int i = 0; i < (testplayer_width * testplayer_height); i++) {
+	    dest[i] = testplayer[i];
     }
 }
 
@@ -185,8 +185,8 @@ int main( ) {
 
 		/* wait for vblank before scrolling */
 		wait_vblank();
-		*bg0_x_scroll = xscroll*2;
-		*bg0_y_scroll = yscroll*2;
+		/**bg0_x_scroll = xscroll*2;*/
+		/**bg0_y_scroll = yscroll*2;*/
 		*bg1_y_scroll= yscroll;
 		*bg1_x_scroll= xscroll;
 
