@@ -361,12 +361,13 @@ struct Bullet{
 };
 //initializes a bullet
 void bullet_init(struct Bullet* bullet){
-	bullet->x=koopa->x+SCREEN_WIDTH+20; 
+	bullet->x=SCREEN_WIDTH+20; 
 	bullet->y=SCREEN_HEIGHT+20;
 	bullet->move=0;
 	bullet->xvel=0;
 	bullet->yvel=0;
-	bullet->sprite=sprite_init(bullet-> >> 8, bullet->y >> 8, SIZE_8_8, 0, 0, 32);
+	bullet->sprite=sprite_init(bullet->x >> 8, bullet->y >> 8, SIZE_8_8, 0, 0, 32, 0);
+}
 /* initialize the koopa */
 void koopa_init(struct Koopa* koopa) {
     koopa->x = 100 << 8;
