@@ -382,8 +382,6 @@ void koopa_init(struct Koopa* koopa) {
     koopa->animation_delay = 8;
     koopa->sprite = sprite_init(koopa->x >> 8, koopa->y >> 8, SIZE_16_32, 0, 0, koopa->frame, 0);
 }
-
-
 /* move the koopa left or right returns if it is at edge of the screen */
 int koopa_left(struct Koopa* koopa) {
     /* face left */
@@ -391,7 +389,7 @@ int koopa_left(struct Koopa* koopa) {
     koopa->move = 1;
 
     /* if we are at the left end, just scroll the screen */
-    if ((koopa->x >> 8) < koopa->border) {
+    if ((koopa->x >> 8) < 10) {
         return 1;
     } else {
         /* else move left */
