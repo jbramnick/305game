@@ -240,7 +240,6 @@ void sprite_update_all() {
     /* copy them all over */
     memcpy16_dma((unsigned short*) sprite_attribute_memory, (unsigned short*) sprites, NUM_SPRITES * 4);
 }
-
 /* setup all sprites */
 void sprite_clear() {
     /* clear the index counter */
@@ -273,7 +272,7 @@ void sprite_move(struct Sprite* sprite, int dx, int dy) {
     /* get the current y coordinate */
     int y = sprite->attribute0 & 0xff;
 
-    /* get the current x coordinate */
+   /* get the current x coordinate */
     int x = sprite->attribute1 & 0x1ff;
 
     /* move to the new location */
@@ -352,7 +351,22 @@ struct Koopa {
     /* if the koopa is currently falling */
     int falling;
 };
-
+//the bullet struct
+struct Bullet{
+	struct Sprite* sprite;
+	int x,y;
+	int xvel;
+	int yvel;
+	int move;
+};
+//initializes a bullet
+void bullet_init(struct Bullet* bullet){
+	bullet->x=koopa->x+SCREEN_WIDTH+20; 
+	bullet->y=SCREEN_HEIGHT+20;
+	bullet->move=0;
+	bullet->xvel=0;
+	bullet->yvel=0;
+	bullet->sprite=sprite_init(bullet-> >> 8, bullet->y >> 8, SIZE_8_8, 0, 0, 32);
 /* initialize the koopa */
 void koopa_init(struct Koopa* koopa) {
     koopa->x = 100 << 8;
@@ -367,6 +381,7 @@ void koopa_init(struct Koopa* koopa) {
     koopa->animation_delay = 8;
     koopa->sprite = sprite_init(koopa->x >> 8, koopa->y >> 8, SIZE_16_32, 0, 0, koopa->frame, 0);
 }
+
 
 /* move the koopa left or right returns if it is at edge of the screen */
 int koopa_left(struct Koopa* koopa) {
@@ -389,7 +404,7 @@ int koopa_right(struct Koopa* koopa) {
     koopa->move = 1;
 
     /* if we are at the right end, just scroll the screen */
-    if ((koopa->x >> 8) > (SCREEN_WIDTH - 16 - koopa->border)) {
+    if ((koopa->x >> 8) > (SCREEN_WIDTH - 30 )) {
         return 1;
     } else {
         /* else move right */
@@ -397,7 +412,29 @@ int koopa_right(struct Koopa* koopa) {
         return 0;
     }
 }
-
+int koopa_down(struct Koopa* koopa)
+{
+	sprite_set_horizontal_flip(koopa->sprite,0);
+	koopa->move=1;
+	if((koopa->y >> 8)>(SCREEN_HEIGHT)){
+		koopa->y=SCREEN_HEIGHT;
+		return 1;
+	}else{
+		koopa->y+= 256;
+		return 0;
+	}
+}
+int koopa_up(struct Koopa* koopa){
+	sprite_set_horizontal_flip(koopa->sprite,0);
+	koopa->move=1;
+	if((koopa->y >> 8) < 0){
+		koopa->y=0;
+		return 1;
+	}else{
+		koopa->y-=256;
+		return 0;
+	}
+}
 /* stop the koopa from walking left/right */
 void koopa_stop(struct Koopa* koopa) {
     koopa->move = 0;
@@ -459,6 +496,8 @@ void koopa_update(struct Koopa* koopa, int xscroll) {
     /* check which tile the koopa's feet are over */
     unsigned short tile = tile_lookup((koopa->x >> 8) + 8, (koopa->y >> 8) + 32, xscroll,
             0, map, map_width, map_height);
+    unsigned short tiletop=tile_lookup((koopa->x >> 8)+8,(koopa->y >> 8),xscroll,0,map,map_width,map_height);
+
 
     /* if it's block tile
      * these numbers refer to the tile indices of the blocks the koopa can walk on */
@@ -477,8 +516,13 @@ void koopa_update(struct Koopa* koopa, int xscroll) {
 
     } else {
         /* he is falling now */
-        koopa->falling = 1;
+        koopa->falling = 0;
     }
+    if((tiletop >=1 && tiletop <= 6) || (tiletop >= 12 && tiletop <=17)){
+    		koopa->yvel=0;
+		koopa->y+=1*256;
+    }
+
 
 
     /* update animation if moving */
@@ -523,30 +567,34 @@ int main( ) {
     while (1) {
         /* update the koopa */
         koopa_update(&koopa, xscroll);
-
         /* now the arrow keys move the koopa */
-        if (button_pressed(BUTTON_RIGHT)) {
-            if (koopa_right(&koopa)) {
-                xscroll++;
-            }
+        if(button_pressed(BUTTON_UP)&&button_pressed(BUTTON_RIGHT)){
+		koopa_up(&koopa);
+		koopa_right(&koopa);
+	}else if(button_pressed(BUTTON_DOWN)&&button_pressed(BUTTON_RIGHT)){
+		koopa_down(&koopa);
+		koopa_right(&koopa);
+	}else if(button_pressed(BUTTON_DOWN)&&button_pressed(BUTTON_LEFT)){
+		koopa_down(&koopa);
+		koopa_left(&koopa);
+	}else if(button_pressed(BUTTON_UP)&&button_pressed(BUTTON_LEFT)){
+		koopa_up(&koopa);
+		koopa_left(&koopa);
+	}else if (button_pressed(BUTTON_RIGHT)) {
+            koopa_right(&koopa); 
         } else if (button_pressed(BUTTON_LEFT)) {
-            if (koopa_left(&koopa)) {
-                xscroll--;
-            }
-        } else {
+            koopa_left(&koopa);
+        }else if (button_pressed(BUTTON_DOWN)){
+		koopa_down(&koopa);
+	}else if(button_pressed(BUTTON_UP)){
+		koopa_up(&koopa);
+	}else{
             koopa_stop(&koopa);
         }
-
-        /* check for jumping */
-        if (button_pressed(BUTTON_A)) {
-            koopa_jump(&koopa);
-        }
-
         /* wait for vblank before scrolling and moving sprites */
         wait_vblank();
         *bg0_x_scroll = xscroll;
         sprite_update_all();
-
         /* delay some */
         delay(300);
     }
